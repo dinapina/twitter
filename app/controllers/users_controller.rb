@@ -1,11 +1,12 @@
 class UsersController < ApplicationController
   
-  before_action :signed_in_user, only: [:edit, :update]
+  before_action :signed_in_user, only: [:edit, :update, :destroy, :following, :followers]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
   
+  
   def index
-    @users = User.paginate(page: params[:page])
+    @users = User.paginate(page: params[:page]) #делим посты по страница
   end
   
   def new #просто создает форму
@@ -14,7 +15,7 @@ class UsersController < ApplicationController
   
   def show
     @user=User.find_by_id(params[:id])
-    
+    @microposts = @user.microposts.paginate(page: params[:page]) #мы помещаем в микропост все микропосты этого пользователя
   end
   
   def create #не нужна страница. он сохраняет данные со страницы регистрации
@@ -48,6 +49,22 @@ class UsersController < ApplicationController
     flash[:success] = "User deleted."
     redirect_to users_url
   end
+  
+  def following
+    @title = "Following"
+    @user = User.find(params[:id])
+    @users = @user.followed_users.paginate(page: params[:page])
+    render 'show_follow'
+  end
+
+  def followers
+    @title = "Followers"
+    @user = User.find(params[:id])
+    @users = @user.followers.paginate(page: params[:page])
+    render 'show_follow'
+  end
+
+  
   
   private 
     def user_params
